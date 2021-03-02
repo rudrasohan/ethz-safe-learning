@@ -4,6 +4,7 @@ from simba.infrastructure.logging_utils import logger
 from simba.agents import BaseAgent
 from simba.policies import CemMpc, SafeCemMpc, RandomShootingMpc, RandomMpc
 from simba.models.transition_model import TransitionModel
+from simba.models.constraint_model import ConstraintModel
 
 
 class MbrlAgent(BaseAgent):
@@ -30,15 +31,22 @@ class MbrlAgent(BaseAgent):
         assert all(key in kwargs.keys() for key in ('policy', 'policy_params', 'model', 'model_params')), \
             "Did not specify a policy or a model."
         kwargs['model_params']['scale_features'] = kwargs['scale_features']
+        self.active_constraint = False
+        self.c_model = None
+        if kwargs['c_params'] is not None:
+            self.active_constraint = True
+            self.c_model = self._make_constraint_model(environment.get_cost, kwargs.pop('c_params'))
+
         self.model = self._make_model(kwargs.pop('model'), kwargs.pop('model_params'), environment,
                                       kwargs.pop('sampling_propagation'))
         self.policy = self._make_policy(kwargs.pop('policy'), kwargs.pop('policy_params'), environment)
+        
 
     @property
     def warm(self):
         return self.total_warmup_timesteps_so_far >= self.warmup_timesteps
 
-    def update(self):
+    def update(self, c_update=False):
         observations, actions, next_observations, _, _, infos = \
             self.replay_buffer.sample_recent_data(self.train_batch_size)
         goal_mets = np.array(list(map(lambda info: info.get('goal_met', False), infos)))
@@ -51,6 +59,8 @@ class MbrlAgent(BaseAgent):
             masked_actions], axis=1
         )
         self.model.fit(observations_with_actions, masked_next_observations)
+        if self.active_constraint and c_update:
+            self.c_model.fit(observations, actions, next_observations)
 
     def _interact(self, environment):
         if not self.warm:
@@ -73,6 +83,8 @@ class MbrlAgent(BaseAgent):
     def _build(self):
         self.model.build()
         self.policy.build()
+        if self.active_constraint:
+            self.c_model.build()
         logger.info("Done building Mbrl agent computational graph.")
 
     def _load(self):
@@ -112,7 +124,16 @@ class MbrlAgent(BaseAgent):
     def _make_model(self, model, model_params, environment, sampling_propagation):
         return TransitionModel(
             model=model,
+            c_model=self.c_model,
             observation_space=environment.observation_space,
             action_space=environment.action_space,
             sampling_propagation=sampling_propagation,
             **model_params)
+
+    def _make_constraint_model(self, cost_function, c_params):
+        return ConstraintModel(
+            inputs_dim=self.observation_space_dim,
+            outputs_dim=self.actions_space_dim,
+            cost_function=cost_function,
+            **c_params
+        )

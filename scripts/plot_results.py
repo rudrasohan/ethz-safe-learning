@@ -1,7 +1,8 @@
 import argparse
 import os
 from pathlib import Path
-
+import seaborn as sns
+sns.set_theme()
 import matplotlib.pyplot as plt
 import numpy as np
 from tensorboard.backend.event_processing import event_accumulator
@@ -23,7 +24,7 @@ def parse_tf_event_file(file_path):
 
 def parse_experiment_data(experiment_path):
     files = list(Path(experiment_path).glob('**/events.out.tfevents.*'))
-    assert len(files) == 4, 'Expected four seeds per experiment.'
+    # assert len(files) == 2, 'Expected four seeds per experiment.'
     rl_objectives, mean_sum_costs, sum_costs, timesteps = [], [], [], []
     for file in files:
         run_rl_objective, run_mean_sum_costs, run_sum_costs, run_timesteps = parse_tf_event_file(str(file))

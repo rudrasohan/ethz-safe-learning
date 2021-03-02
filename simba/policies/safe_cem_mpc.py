@@ -77,7 +77,7 @@ class SafeCemMpc(CemMpc):
         cumulative_rewards = tf.zeros((self.n_samples * self.particles,), dtype=tf.float32)
         done_trajectories = tf.zeros((self.n_samples * self.particles,), dtype=tf.bool)
         safe_trajectories = tf.ones((self.n_samples,), dtype=tf.bool)
-        horizon = trajectories.shape[1]
+        horizon = self.horizon#trajectories.shape[1]
         mu, sigma = tf.linspace(0.5, 0.5, horizon - 1), tf.linspace(0.27, 0.27, horizon - 1)
         for t in range(horizon - 1):
             s_t = trajectories[:, t, ...]
@@ -97,7 +97,7 @@ class SafeCemMpc(CemMpc):
 
     def compute_mean_costs(self, trajectories, action_sequences):
         cumulative_costs = tf.zeros((tf.shape(trajectories)[0],))
-        horizon = trajectories.shape[1]
+        horizon = self.horizon#trajectories.shape[1]
         for t in range(horizon - 1):
             s_t = trajectories[:, t, ...]
             s_t_1 = trajectories[:, t + 1, ...]

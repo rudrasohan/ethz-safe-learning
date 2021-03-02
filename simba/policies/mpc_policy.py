@@ -26,7 +26,7 @@ class MpcPolicy(PolicyBase):
     def compute_objective(self, trajectories, action_sequences):
         cumulative_rewards = tf.zeros((tf.shape(trajectories)[0],))
         done_trajectories = tf.zeros((tf.shape(trajectories)[0],), dtype=bool)
-        horizon = trajectories.shape[1]
+        horizon = self.horizon #trajectories.shape[1]
         for t in range(horizon - 1):
             s_t = trajectories[:, t, ...]
             s_t_1 = trajectories[:, t + 1, ...]

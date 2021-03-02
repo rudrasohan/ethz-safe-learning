@@ -28,7 +28,10 @@ class RLTrainer(object):
         for iteration in range(iterations):
             logger.info("Training iteration {}.".format(iteration))
             self.agent.interact(self.environment)
-            self.agent.update()
+            if iteration < 6:
+                self.agent.update(True)
+            else:
+                self.agent.update(True)
             if self.log_frequency > 0 and iteration % self.log_frequency == 0:
                 self.log(self.agent.report(
                     self.environment,

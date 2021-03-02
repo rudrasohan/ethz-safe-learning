@@ -33,6 +33,7 @@ def main():
                                     pretty_print(params))
     dump_string(pretty_print(params) + '\n' +
                 'git hash: ' + get_git_hash(), experiment_log_dir + '/params.txt')
+    #import pdb; pdb.set_trace()
     env = make_environment(params)
     agent = make_agent(params, env)
     trainer_options = params['options'].pop('trainer_options')

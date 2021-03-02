@@ -12,5 +12,6 @@ options:
   environment: MbrlSafexp-PointSimpleGoal1-v0
 
 agents:
-  mbrl_agent:
-    policy: cem_mpc
+  mbrl_agent: 
+    policy: random_shooting_mpc
+    constraint: constraint_model

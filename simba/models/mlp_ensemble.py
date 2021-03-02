@@ -43,6 +43,7 @@ class GaussianDistMlp(tf.keras.Model):
                  activation,
                  dropout_rate):
         super().__init__()
+        self.inputs_dim = inputs_dim
         self.forward = tf.keras.Sequential(
             [tf.keras.layers.InputLayer(input_shape=(inputs_dim,))] +
             [BaseLayer(units, activation, dropout_rate) for _ in range(n_layers)]
@@ -53,7 +54,7 @@ class GaussianDistMlp(tf.keras.Model):
     # Following https://stackoverflow.com/questions/58577713/tf-function-with-input-signature-errors-out-when-calling
     # -a-sub-layer
     @tf.function(
-        input_signature=[tf.TensorSpec(shape=None, dtype=tf.float32),
+        input_signature=[tf.TensorSpec(shape=(None, None), dtype=tf.float32),
                          tf.TensorSpec(shape=(), dtype=tf.bool)]
     )
     def call(self, inputs, training=None):
@@ -145,7 +146,7 @@ class MlpEnsemble(tf.Module):
         return loss
 
     @tf.function(
-        input_signature=[tf.TensorSpec(shape=None, dtype=tf.float32)] * 2
+        input_signature=[tf.TensorSpec(shape=(None, None), dtype=tf.float32)]*2
     )
     def validation_step(self, inputs, targets):
         loss = 0.0

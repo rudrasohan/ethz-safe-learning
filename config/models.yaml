@@ -11,3 +11,16 @@ models:
       units: 128
       activation: tf.nn.relu
       dropout_rate: 0.0
+
+  constraint_model:
+    batch_size: 64
+    validation_split: 0.2
+    learning_rate: 0.0025
+    learning_rate_schedule: True
+    training_steps: 500
+    c_level: 0.0
+    mlp_params:
+      n_layers: 2
+      units: 128
+      activation: tf.nn.relu
+      dropout_rate: 0.0

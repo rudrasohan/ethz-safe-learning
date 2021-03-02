@@ -7,6 +7,7 @@ from simba.models import BaseModel, MlpEnsemble
 class TransitionModel(BaseModel):
     def __init__(self,
                  model,
+                 c_model,
                  observation_space,
                  action_space,
                  scale_features,
@@ -19,6 +20,7 @@ class TransitionModel(BaseModel):
             inputs_dim=self.inputs_dim,
             outputs_dim=self.outputs_dim,
             **kwargs)
+        self.c_model = c_model
         self.observation_space = observation_space
         self.action_space = action_space
         self.scale_features = scale_features
@@ -56,10 +58,12 @@ class TransitionModel(BaseModel):
         )
 
     def simulate_trajectories(self, current_state, action_sequences):
-        return self.unfold_sequences(
+        sequences = self.unfold_sequences(
             tf.convert_to_tensor(current_state, dtype=tf.float32),
             tf.convert_to_tensor(action_sequences, dtype=tf.float32)
-        ).numpy()
+        )
+        import pdb; pdb.set_trace()
+        return sequences.numpy()
 
     @tf.function
     def unfold_sequences(self, s_0, action_sequences):
@@ -69,6 +73,11 @@ class TransitionModel(BaseModel):
         for t in tf.range(horizon):
             trajectories = trajectories.write(t, s_t)
             a_t = action_sequences[:, t, ...]
+            if self.c_model is not None:
+                #print("CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC")
+                c_0 = self.c_model.cost_function(s_t, None)
+                #print("############################")
+                a_t = self.c_model(c_0, s_t, a_t)
             s_t_a_t_scaled = self.scale(tf.concat([s_t, a_t], axis=1))
             # The model predicts s_t_1 - s_t hence we add here the previous state.
             mus, sigmas, d_s_t = self.model(s_t_a_t_scaled)
