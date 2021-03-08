@@ -71,6 +71,8 @@ def resolve_name(name):
         return 'CEM-MPC'
     elif name == 'aware':
         return 'Safe CEM-MPC'
+    elif name == 'random':
+        return 'Random Shooting'
     elif name == 'no_sample':
         return 'Deterministic Safe CEM-MPC'
     else:

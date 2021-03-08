@@ -7,6 +7,7 @@ from simba.policies.cem_mpc import CemMpc
 class SafeCemMpc(CemMpc):
     def __init__(self,
                  model,
+                 c_model,
                  environment,
                  horizon,
                  iterations,
@@ -17,8 +18,10 @@ class SafeCemMpc(CemMpc):
                  stddev_threshold,
                  noise_stddev,
                  posterior_mean_threashold):
+        #import pdb; pdb.set_trace()
         super().__init__(
             model,
+            c_model,
             environment,
             horizon,
             iterations,
@@ -29,6 +32,7 @@ class SafeCemMpc(CemMpc):
             stddev_threshold,
             noise_stddev
         )
+        #self.c_model = c_model
         self.cost = environment.get_cost
         self.posterior_mean_threashold = posterior_mean_threashold
         self.last_action = tf.zeros((self.action_space.shape[0],), dtype=tf.float32)

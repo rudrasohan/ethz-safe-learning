@@ -6,12 +6,14 @@ from simba.infrastructure.logging_utils import logger
 class RandomShootingMpc(MpcPolicy):
     def __init__(self,
                  model,
+                 c_model,
                  environment,
                  horizon,
                  n_samples,
                  particles):
         super().__init__(
             model,
+            c_model,
             environment,
             horizon,
             n_samples,

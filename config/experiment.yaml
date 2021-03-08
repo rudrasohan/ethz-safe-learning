@@ -1,7 +1,7 @@
 options:
   trainer_options:
     video_log_frequency: -1
-    log_frequency: 7
+    log_frequency: 2
     max_video_length: 1000
     eval_interaction_steps: 4000
     eval_episode_length: 1000

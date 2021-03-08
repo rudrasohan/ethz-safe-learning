@@ -117,6 +117,7 @@ class BaseAgent(object):
         steps = 0
         rollout_done = False
         last_cost = 0.0
+        max_per_step_cost = 0.0
         while not rollout_done:
             action = policy.generate_action(observation)
             observations.append(observation)
@@ -132,17 +133,21 @@ class BaseAgent(object):
                 # environment.render('human')
                 steps += 1
                 repeat_rewards += reward
-                last_cost = info.get('cost', 0.0)
-                repeat_costs += last_cost
+                repeat_costs += info.get('cost', 0.0)
                 rollout_done = (steps == max_trajectory_length) or done
                 # if self.active_constraint:
                 #     action = self.c_model(last_cost, observation, action)
                 if info.get('goal_met', False):
                     #print("hellow")
+                    last_cost = 0.0
                     break
                 if rollout_done:
+                    last_cost = 0.0
                     break
             info['cost'] = repeat_costs
+            max_per_step_cost = max(max_per_step_cost, repeat_costs)
+            #print(max_per_step_cost)
+            last_cost = repeat_costs
             next_observations.append(observation)
             rewards.append(repeat_rewards)
             infos.append(info)

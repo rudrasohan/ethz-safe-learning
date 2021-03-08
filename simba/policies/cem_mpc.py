@@ -6,6 +6,7 @@ from simba.policies.mpc_policy import MpcPolicy
 class CemMpc(MpcPolicy):
     def __init__(self,
                  model,
+                 c_model,
                  environment,
                  horizon,
                  iterations,
@@ -17,6 +18,7 @@ class CemMpc(MpcPolicy):
                  noise_stddev):
         super().__init__(
             model,
+            c_model,
             environment,
             horizon,
             n_samples,

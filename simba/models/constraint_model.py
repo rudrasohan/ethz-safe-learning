@@ -1,4 +1,5 @@
 import numpy as np
+from os.path import join 
 import tensorflow as tf
 from simba.models.mlp_ensemble import BaseLayer, EpochLearningRateSchedule
 from simba.infrastructure.logging_utils import logger
@@ -52,6 +53,7 @@ class ConstraintModel(tf.Module):
         self.cost_function = cost_function
         self.mlp_params = mlp_params
         self.c_level = c_level
+        self.epoch_id = 0
         self.constraint_model = ConstraintMlp(inputs_dim=self.inputs_dim, outputs_dim=self.outputs_dim, **self.mlp_params) 
         self.optimizer = tf.keras.optimizers.Adam(
             EpochLearningRateSchedule(learning_rate, training_steps, train_epochs)
@@ -65,6 +67,11 @@ class ConstraintModel(tf.Module):
     def forward(self, states, training=tf.constant(False)):
         g = self.constraint_model(states, training)
         return g
+
+    # def save_model(self):
+    #     base_path = "/home/sohan/MTP/checkpoints"
+    #     tf.saved_model.save(self.constraint_model, join(base_path, "model"+str(self.epoch_id)))
+    #     self.constraint_model.save()
     
     @tf.function
     def training_step(self, prev_states, actions, states):
@@ -78,7 +85,7 @@ class ConstraintModel(tf.Module):
             g = tf.reshape(g, actions.shape)
             #import pdb; pdb.set_trace()
             y_preds = tf.reduce_sum(tf.multiply(g, actions), 1)
-            loss = tf.keras.losses.MSE((targets-C_0), y_preds)
+            loss = tf.keras.losses.MSE((targets-C_0)*6.0, y_preds)
             grads = tape.gradient(loss, self.constraint_model.trainable_variables)
             self.optimizer.apply_gradients(zip(grads, self.constraint_model.trainable_variables))
         return loss
@@ -90,7 +97,7 @@ class ConstraintModel(tf.Module):
         g = self.forward(states, tf.constant(False))
         g = tf.reshape(g, actions.shape)
         y_preds = tf.reduce_sum(tf.multiply(g, actions), 1)
-        loss = tf.keras.losses.MSE((targets-C_0), y_preds)
+        loss = tf.keras.losses.MSE((targets-C_0)*6.0, y_preds)
         return loss
 
     def split_train_validate(self, obs, acts, next_obs):

@@ -7,12 +7,14 @@ from simba.infrastructure.logging_utils import logger
 class MpcPolicy(PolicyBase):
     def __init__(self,
                  model,
+                 c_model,
                  environment,
                  horizon,
                  n_samples,
                  particles):
         super().__init__()
         self.model = model
+        #self.c_model = c_model
         self.reward = environment.get_reward
         self.action_space = environment.action_space
         assert isinstance(self.action_space, spaces.Box), "Expecting only box as action space."
@@ -31,6 +33,9 @@ class MpcPolicy(PolicyBase):
             s_t = trajectories[:, t, ...]
             s_t_1 = trajectories[:, t + 1, ...]
             a_t = action_sequences[:, t, ...]
+            # if self.c_model is not None:
+            #     c_0 = self.c_model.cost_function(s_t, None)
+            #     a_t = self.c_model(c_0, s_t, a_t)
             reward, dones = self.reward(s_t, a_t, s_t_1)
             cumulative_rewards += reward * (1.0 - tf.cast(done_trajectories, dtype=tf.float32))
             done_trajectories = tf.logical_or(

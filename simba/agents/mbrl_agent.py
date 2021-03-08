@@ -1,4 +1,5 @@
 import numpy as np
+import tensorflow as tf
 from simba.infrastructure.common import standardize_name
 from simba.infrastructure.logging_utils import logger
 from simba.agents import BaseAgent
@@ -61,6 +62,8 @@ class MbrlAgent(BaseAgent):
         self.model.fit(observations_with_actions, masked_next_observations)
         if self.active_constraint and c_update:
             self.c_model.fit(observations, actions, next_observations)
+            # base_path = "/home/sohan/MTP/checkpoints/model"
+            # tf.saved_model.save(self.c_model, base_path)
 
     def _interact(self, environment):
         if not self.warm:
@@ -119,7 +122,7 @@ class MbrlAgent(BaseAgent):
             return RandomMpc(policy_params['environment'].action_space)
         if policy_params is None:
             return eval((standardize_name(policy)))()
-        return eval((standardize_name(policy)))(model=self.model, **policy_params)
+        return eval((standardize_name(policy)))(model=self.model, c_model=self.c_model, **policy_params)
 
     def _make_model(self, model, model_params, environment, sampling_propagation):
         return TransitionModel(
